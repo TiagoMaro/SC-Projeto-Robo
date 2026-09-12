@@ -5,7 +5,7 @@ from enum import Enum
 class Direcao(Enum):
     CIMA = 0
     ESQUERDA = 1
-    # BAIXO = 2
+    BAIXO = 2
     DIREITA = 3
 
 # Mapeamento das direções para os deltas de linha e coluna
@@ -25,7 +25,6 @@ def calcular_proxima_posicao(posicao_atual: tuple, direcao: Direcao) -> tuple:
 # Função para girar à esquerda a partir da direção atual
 def girar_esquerda(direcao_atual: Direcao) -> Direcao:
     return Direcao((direcao_atual.value + 1) % 4)
-
 
 # PARTE PARA LER O LABIRINTO DO ARQUIVO
 # Função para carregar o mapa do labirinto a partir de um arquivo
@@ -55,28 +54,3 @@ class Ambiente:
         VAZIO = "VAZIO"
         HUMANO = "HUMANO"
         SAIDA = "SAÍDA"
-
-
-class AlarmeRobo(Exception):
-    """Classe base para todos os alarmes de segurança do robô."""
-    pass
-
-class ColisaoComParedeError(AlarmeRobo):
-    """Exceção levantada quando o robô colide com uma parede."""
-    pass
-
-class AtropelarHumanoError(AlarmeRobo):
-    """Exceção levantada quando o robô atropela um humano."""
-    pass
-
-class EjetarSemHumanoError(AlarmeRobo):
-    """Exceção levantada quando o robô tenta ejetar sem humano na carga."""
-    pass
-
-class ColetarSemHumanoError(AlarmeRobo):
-    """Exceção levantada quando o robô tenta coletar sem humano à frente."""
-    pass
-
-class EjetarSemSaidaError(AlarmeRobo):
-    """Exceção levantada quando o robô tenta ejetar sem estar na saída."""
-    pass

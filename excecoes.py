@@ -17,7 +17,3 @@ class EjetarSemHumanoError(AlarmeRobo):
 class ColetarSemHumanoError(AlarmeRobo):
     """Exceção levantada quando o robô tenta coletar sem humano à frente."""
     pass
-
-class EjetarSemSaidaError(AlarmeRobo):
-    """Exceção levantada quando o robô tenta ejetar sem estar na saída.s"""
-    pass
