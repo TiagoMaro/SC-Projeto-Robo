@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
-from excecoes import AtropelarHumanoError, ColisaoComParedeError, ColetarSemHumanoError, EjetarSemHumanoError
-
+from pathlib import Path
+from excecoes import AtropelarHumanoError, ColisaoComParedeError, ColetarSemHumanoError, EjetarSemHumanoError, EjetarSemSaidaError
+import csv
 
 # Enum para representar as direções possíveis
 class Direcao(Enum):
@@ -66,6 +67,7 @@ class Ambiente:
         self.posicao_atual = self.posicao_inicial
         self.direcao_atual = self.direcao_inicial
         self.situacao_carga = SituacaoCarga.SEM_CARGA
+        self.caminho_log = Path(caminho_arquivo).with_suffix('.csv')
 
     def _encontrar_posicao_inicial(self):
         for indice_linha, linha in enumerate(self._mapa):
@@ -76,7 +78,9 @@ class Ambiente:
 
     def ligar(self) -> ResultadoComando:
         """Liga o robô: não move nada, só lê os sensores na posição/direção iniciais."""
-        return self._ler_sensores()
+        leituras_atuais = self._ler_sensores()
+        self._registrar_log("LIGAR", leituras_atuais)
+        return leituras_atuais
 
     def executar_comando(self, comando: str) -> ResultadoComando:
         """Aplica um comando (A, G, P ou E) e devolve o resultado sensorial."""
@@ -88,8 +92,9 @@ class Ambiente:
             self._processar_coleta()
         elif comando == 'E':
             self._processar_ejetar()
-    
-        return self._ler_sensores()
+        leituras_atuais = self._ler_sensores()
+        self._registrar_log(comando, leituras_atuais)
+        return leituras_atuais
 
     def _processar_coleta(self):
         """Tenta pegar um humano na célula à frente do robô."""
@@ -110,13 +115,16 @@ class Ambiente:
 
     def _processar_ejetar(self):
         leitura_frontal = self._ler_direcao(self.direcao_atual)
-        if self.situacao_carga == SituacaoCarga.COM_HUMANO and leitura_frontal == LeituraSensor.SAIDA:
-            self.situacao_carga = SituacaoCarga.SEM_CARGA
-        else:
+        if self.situacao_carga != SituacaoCarga.COM_HUMANO:
             raise EjetarSemHumanoError(
-                "Comando 'E' bloqueado: não há humano para ejetar ou não está na saída."
+                "Comando 'E' bloqueado: não há humano na carga."
             )
-            
+        elif leitura_frontal != LeituraSensor.SAIDA:
+            raise EjetarSemSaidaError(
+                "Comando 'E' bloqueado: não está na saída."
+            )
+        else:
+            self.situacao_carga = SituacaoCarga.SEM_CARGA
 
     def _processar_avanco(self):
         """Valida e, se estiver tudo certo, efetivamente move o robô uma célula."""
@@ -194,3 +202,15 @@ class Ambiente:
                 return LeituraSensor.VAZIO
             case _:
                 raise ValueError(f"Caractere desconhecido no mapa: '{caractere}'")
+            
+    def _registrar_log(self, comando: str, resultado: ResultadoComando):
+        """Registra o comando e o resultado sensorial em um arquivo CSV."""
+        with open(self.caminho_log, mode='a', newline='', encoding='utf-8') as arquivo_csv:
+            escritor_csv = csv.writer(arquivo_csv)
+            escritor_csv.writerow([
+                comando,
+                resultado.sensor_esquerdo.value,
+                resultado.sensor_direito.value,
+                resultado.sensor_frontal.value,
+                resultado.situacao_carga.value
+            ])

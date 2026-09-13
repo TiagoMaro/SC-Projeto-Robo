@@ -6,9 +6,13 @@ class ColisaoComParedeError(AlarmeRobo):
 
 class AtropelarHumanoError(AlarmeRobo):
     """Exceção levantada quando o robô atropela um humano."""
+    
+class EjetarSemSaidaError(AlarmeRobo):
+    """Exceção levantada quando o robô tenta ejetar sem estar na saída."""
 
 class EjetarSemHumanoError(AlarmeRobo):
     """Exceção levantada quando o robô tenta ejetar sem humano na carga."""
 
 class ColetarSemHumanoError(AlarmeRobo):
     """Exceção levantada quando o robô tenta coletar sem humano à frente."""
+    
