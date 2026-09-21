@@ -68,6 +68,7 @@ class Ambiente:
         self.direcao_atual = self.direcao_inicial
         self.situacao_carga = SituacaoCarga.SEM_CARGA
         self.caminho_log = Path(caminho_arquivo).with_suffix('.csv')
+        self.caminho_log.write_text('', encoding='utf-8')
 
     def _encontrar_posicao_inicial(self):
         for indice_linha, linha in enumerate(self._mapa):
@@ -104,12 +105,9 @@ class Ambiente:
             raise ColetarSemHumanoError(
                 "Comando 'P' bloqueado: não há humano na célula à frente."
             )
-            
-        # Calcula a posição exata para alterar o mapa
         posicao_alvo = calcular_proxima_posicao(self.posicao_atual, self.direcao_atual)
         linha_alvo, coluna_alvo = posicao_alvo
         
-        # Atualiza o estado do robô e o mapa
         self.situacao_carga = SituacaoCarga.COM_HUMANO
         self._mapa[linha_alvo][coluna_alvo] = '.'
 
@@ -125,6 +123,9 @@ class Ambiente:
             )
         else:
             self.situacao_carga = SituacaoCarga.SEM_CARGA
+            posicao_saida = calcular_proxima_posicao(self.posicao_atual, self.direcao_atual)
+            linha_saida, coluna_saida = posicao_saida
+            self._mapa[linha_saida][coluna_saida] = '@'
 
     def _processar_avanco(self):
         """Valida e, se estiver tudo certo, efetivamente move o robô uma célula."""
@@ -140,8 +141,6 @@ class Ambiente:
             raise AtropelarHumanoError(
                 f"Comando 'A' bloqueado: humano em {posicao_destino}"
             )
-
-        # Só chega aqui se passou nas duas validações -> agora sim move de verdade
         self.posicao_atual = posicao_destino
 
     def _ler_sensores(self) -> ResultadoComando:
@@ -164,7 +163,6 @@ class Ambiente:
 
     def _leitura_sensor_direita(self) -> LeituraSensor:
         """Lê o sensor direito, sem alterar a direção real do robô."""
-        # Girar à esquerda 3 vezes equivale a girar 90° à direita uma vez
         direcao_calculada = girar_esquerda(girar_esquerda(girar_esquerda(self.direcao_atual)))
         return self._ler_direcao(direcao_calculada)
         
@@ -173,7 +171,6 @@ class Ambiente:
         linha, coluna = posicao
         total_linhas = len(self._mapa)
         
-        # Validação contra índices negativos ou além dos limites
         if linha < 0 or linha >= total_linhas:
             return 'X'
         
@@ -188,7 +185,6 @@ class Ambiente:
         posicao_alvo = calcular_proxima_posicao(self.posicao_atual, direcao)
         caractere = self._conteudo_da_celula(posicao_alvo)
 
-        # Mapeamento do caractere do mapa para a enumeração do sensor
         match caractere:
             case 'X':
                 return LeituraSensor.PAREDE

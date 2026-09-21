@@ -174,12 +174,6 @@ class CerebroRobo:
         self.historico.append(("LIGAR", resultado))
         self._ultima_leitura = resultado
         self.mapa.registrar_leitura(self.pos, self.direcao, resultado)
-
-        # A célula inicial não tem "direção de chegada": os sensores só
-        # cobrem 3 dos 4 lados na primeira leitura. Um giro extra aqui revela
-        # o 4º lado (o que ficava "atrás") antes de decidir qualquer
-        # movimento - sem isso, um corredor que começa atrás da orientação
-        # inicial poderia nunca ser explorado.
         comando = "G"
         resultado = self._enviar(comando)
         self.direcao = girar_esquerda(self.direcao)
@@ -194,7 +188,7 @@ class CerebroRobo:
     def _checar_seguranca_antes_de_enviar(self, comando: str) -> None:
         leitura = self._ultima_leitura
         if leitura is None:
-            return  # ainda não há leitura (antes do LIGAR)
+            return
 
         if comando == "A" and leitura.sensor_frontal == LeituraSensor.PAREDE:
             raise ColisaoComParedeError(
@@ -234,7 +228,7 @@ class CerebroRobo:
                 self._direcao_chegada[nova_pos] = self.direcao
                 self._pilha.append(nova_pos)
             elif self._pilha and self._pilha[-1] == self.pos:
-                self._pilha.pop()  # estamos voltando (backtrack)
+                self._pilha.pop()
             self.pos = nova_pos
             self.mapa.registrar_leitura(self.pos, self.direcao, resultado)
             if self._rota:
