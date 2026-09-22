@@ -7,7 +7,7 @@ o leva até a saída, gerando um log CSV auditável de toda a operação.
 **Equipe**
 - Fábio Carvalho de Almeida — RA: 2024101059
 - Tiago Machado da Rosa — RA: 2024101751
-- Victor Hugo Mondequi Viana — RA: 2024100142
+- Vitor Hugo Viana Mondequi — RA: 2024100142
 
 ---
 
